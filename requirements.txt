@@ -5,3 +5,4 @@ python-dotenv>=1.0.0
 ib_async>=0.3.0
 pydantic>=1.10.13
 httpx>=0.18.2
+slowapi>=0.1.8

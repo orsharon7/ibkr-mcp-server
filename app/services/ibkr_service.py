@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 from fastapi import HTTPException
 from ib_async import IB
 from dotenv import load_dotenv
@@ -50,7 +50,12 @@ class IBKRService:
             self.connected = False
             print("Disconnected from IBKR")
 
-    async def fetch_portfolio_details(self) -> Dict:
+    async def fetch_portfolio_details(
+        self, 
+        account_id: Optional[str] = None,
+        include_positions: bool = True,
+        include_summary: bool = True
+    ) -> Dict:
         """Fetch portfolio details from IBKR"""
         try:
             if not self.connected:
