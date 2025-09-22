@@ -12,8 +12,7 @@ class PortfolioRequest(BaseModel):
     account_id: Optional[str] = Field(
         None, 
         description="Specific account ID to fetch portfolio for",
-        max_length=50,
-        regex="^[A-Za-z0-9_-]*$"
+        max_length=50
     )
     include_positions: bool = Field(
         True,

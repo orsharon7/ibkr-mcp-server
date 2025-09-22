@@ -1,200 +1,119 @@
-# IBKR MCP Server
+# Local IBKR MCP Server - Optimized for Local Usage
 
-This project is a **secure** FastAPI application that interacts with the Interactive Brokers (IBKR) API to fetch portfolio details.
+This is a **simplified, local-only** FastAPI application that connects to your local Interactive Brokers (IBKR) TWS/Gateway to fetch portfolio data.
 
-## 🔒 Security Features
+## 🏠 Local-Only Design
 
-This application has been security-hardened and includes:
+This version has been optimized specifically for local usage with:
+- ✅ **No authentication** - Safe for single-user local access
+- ✅ **No rate limiting** - No restrictions for local usage  
+- ✅ **No CORS/security headers** - Unnecessary complexity removed
+- ✅ **Minimal dependencies** - Only essential packages included
+- ✅ **Always-on API docs** - Swagger UI available at `/docs`
+- ✅ **Full error details** - Complete error messages for easier debugging
 
-- ✅ **API Key Authentication** - All endpoints require valid authentication
-- ✅ **Rate Limiting** - Protection against abuse and DoS attacks  
-- ✅ **Input Validation** - Pydantic models for request validation
-- ✅ **CORS Security** - Configurable cross-origin request handling
-- ✅ **Security Headers** - HSTS, XSS protection, content type options
-- ✅ **Error Sanitization** - Prevents information disclosure in error messages
-- ✅ **HTTPS Support** - SSL/TLS configuration for production
-- ✅ **Secure Configuration** - Environment-based configuration management
+## 🚀 Quick Start
 
-## Project Structure
-
-```
-ibkr-mcp-server
-├── app
-│   ├── __init__.py
-│   ├── main.py                    # FastAPI app with security middleware
-│   ├── api
-│   │   ├── __init__.py
-│   │   └── endpoints
-│   │       ├── __init__.py
-│   │       └── portfolio.py       # Secured portfolio endpoints
-│   ├── core
-│   │   ├── __init__.py
-│   │   ├── config.py             # Configuration management
-│   │   └── security.py           # Security utilities and authentication
-│   ├── models
-│   │   ├── __init__.py
-│   │   ├── portfolio.py          # Portfolio data models
-│   │   └── requests.py           # Request validation models
-│   └── services
-│       ├── __init__.py
-│       └── ibkr_service.py       # IBKR integration service
-├── tests
-│   ├── __init__.py
-│   └── test_security.py          # Security tests
-├── requirements.txt               # Updated with security dependencies
-├── .env                          # Development environment (secure permissions)
-├── .env.production              # Production environment template
-├── .gitignore                   # Security-aware gitignore
-├── SECURITY_ANALYSIS_REPORT.md  # Comprehensive security analysis
-└── README.md
-```
-
-## 🚀 Setup Instructions
-
-1. **Clone the repository:**
+1. **Install dependencies:**
    ```bash
-   git clone <repository-url>
-   cd ibkr-mcp-server
+   pip install fastapi uvicorn python-dotenv ib_async pydantic
    ```
 
-2. **Create a virtual environment:**
+2. **Configure IBKR connection:**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Set up environment variables:**
-   ```bash
-   # Copy and configure environment file
-   cp .env .env.local
-   # Edit .env.local with your actual credentials
-   ```
-
-   **Required Environment Variables:**
-   ```env
-   API_KEY=your_secure_api_key_here
+   # Edit .env file
    IBKR_HOST=127.0.0.1
-   IBKR_PORT=7496
-   ENVIRONMENT=development  # or production
+   IBKR_PORT=7496  # 7497 for paper trading
    ```
 
-5. **Secure file permissions:**
+3. **Start your IBKR TWS or Gateway** on your local machine
+
+4. **Run the server:**
    ```bash
-   chmod 600 .env .env.local .env.production
+   python app/main.py
    ```
 
-6. **Run the application:**
-   ```bash
-   # Development
-   uvicorn app.main:app --reload
-   
-   # Production
-   uvicorn app.main:app --host 0.0.0.0 --port 443 --ssl-keyfile=key.pem --ssl-certfile=cert.pem
-   ```
+5. **Access the API:**
+   - API Documentation: http://localhost:8000/docs
+   - Portfolio Data: http://localhost:8000/api/v1/portfolio
+   - Health Check: http://localhost:8000/api/v1/health
 
-## 🔐 Authentication
+## 📦 Minimal Dependencies
 
-All API endpoints (except health check) require authentication using Bearer tokens:
+This local version only uses essential packages:
+- `fastapi` - Web framework
+- `uvicorn` - ASGI server  
+- `ib_async` - IBKR connection library
+- `pydantic` - Data validation
+- `python-dotenv` - Environment configuration
 
-```bash
-curl -H "Authorization: Bearer your_api_key" http://localhost:8000/api/v1/portfolio
+**Removed dependencies:**
+- ❌ `requests` - Unused in code
+- ❌ `httpx` - Unused in code  
+- ❌ `slowapi` - Rate limiting not needed locally
+
+## 🔧 Configuration
+
+Simple `.env` configuration:
+```env
+IBKR_HOST=127.0.0.1
+IBKR_PORT=7496
+PORT=8000
 ```
 
 ## 📊 API Endpoints
 
-### Health Check (No Auth Required)
+### Portfolio Data (No Auth Required)
+```
+GET /api/v1/portfolio
+```
+
+Optional query parameters:
+- `account_id` - Specific account ID
+- `include_positions` - Include position details (default: true)
+- `include_summary` - Include account summary (default: true)
+
+### Health Check
 ```
 GET /api/v1/health
 ```
 
-### Portfolio Data (Auth Required)
-```
-GET /api/v1/portfolio
-Authorization: Bearer <your_api_key>
+## 🔗 Data Flow
 
-Query Parameters:
-- account_id (optional): Specific account ID
-- include_positions (boolean): Include position details (default: true)
-- include_summary (boolean): Include account summary (default: true)
+```
+Your IBKR TWS/Gateway (127.0.0.1:7496) ←→ This Server (127.0.0.1:8000) ←→ Your Browser
 ```
 
-## 🧪 Testing
+- ✅ All connections stay on localhost
+- ✅ Read-only access to IBKR data
+- ✅ No external network traffic
+- ✅ No third-party data transmission
 
-Run security tests:
+## 🛠️ Development
+
+Auto-reload is enabled for local development:
 ```bash
-pip install pytest
-pytest tests/test_security.py -v
+# Server automatically restarts when code changes
+python app/main.py
 ```
 
-## 🔒 Security Configuration
+## 📋 IBKR Setup
 
-### Production Deployment
+1. Install and run IBKR TWS or Gateway
+2. Enable API connections in TWS/Gateway settings
+3. Set socket port to 7496 (live) or 7497 (paper)
+4. Allow connections from localhost (127.0.0.1)
 
-1. **Use HTTPS Only:**
-   ```env
-   ENVIRONMENT=production
-   SSL_KEYFILE=/path/to/key.pem
-   SSL_CERTFILE=/path/to/cert.pem
-   ```
+## 🔒 Security Note
 
-2. **Configure CORS:**
-   ```env
-   ALLOWED_ORIGINS=https://yourdomain.com,https://api.yourdomain.com
-   ```
+This local version removes production security features that are unnecessary for single-user local access:
+- No authentication (safe since it's localhost-only)
+- No rate limiting (single user doesn't need limits)
+- No CORS restrictions (same-origin policy irrelevant)
+- No security headers (browser security not applicable)
 
-3. **Set Strong API Keys:**
-   ```env
-   API_KEY=your_long_random_secure_api_key_here
-   ```
-
-4. **Secure File Permissions:**
-   ```bash
-   chmod 600 .env.production
-   chown app:app .env.production
-   ```
-
-### Security Best Practices
-
-- 🔑 Use strong, unique API keys
-- 🔒 Always use HTTPS in production
-- 🚫 Never commit secrets to version control
-- 📊 Monitor and log security events
-- 🔄 Regularly update dependencies
-- 🧪 Run security tests in CI/CD
-
-## 📈 Monitoring
-
-The application includes built-in security monitoring:
-
-- Request logging with sanitized error messages
-- Rate limiting with configurable thresholds
-- Security headers for all responses
-- Input validation on all endpoints
-
-## 🐛 Security Issues
-
-If you discover a security vulnerability, please email the security team directly rather than opening a public issue.
-
-## 📋 Security Checklist
-
-- [x] Authentication implemented
-- [x] Input validation on all endpoints
-- [x] Rate limiting configured
-- [x] CORS properly configured
-- [x] HTTPS support implemented
-- [x] Security headers implemented
-- [x] Error handling doesn't expose internal details
-- [x] Environment variables used for configuration
-- [x] No hardcoded secrets in code
-- [x] Security testing implemented
-- [ ] Dependency vulnerability scanning (recommended)
-- [ ] Production monitoring setup (recommended)
+Your IBKR data stays completely local and private.
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+MIT License - Free for local use.
